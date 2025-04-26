@@ -1,8 +1,11 @@
 import React, { useState } from "react";
-import { ConfigProvider, theme, App as AntdApp, Switch } from "antd";
+import { ConfigProvider, theme, App as AntdApp, Switch, Typography } from "antd";
 import ruRU from "antd/locale/ru_RU";
 import PulleyCalculator from "./components/PulleyCalculator";
 import "./App.css";
+import { version } from '../package.json';
+
+const { Text } = Typography;
 
 const App: React.FC = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -32,6 +35,9 @@ const App: React.FC = () => {
               checked={isDarkMode}
               onChange={() => setIsDarkMode(!isDarkMode)}
             />
+            <Text type="secondary" style={{ marginLeft: 10 }}>
+              Версия: {version}
+            </Text>
           </div>
           <PulleyCalculator />
         </div>

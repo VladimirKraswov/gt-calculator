@@ -56,25 +56,20 @@ export const beltProfiles: Record<BeltType, ToothProfile> = {
 /**
  * Рассчитывает точные параметры шкива по стандарту ISO
  */
-export const calculatePulleyRadius = (
-  beltType: BeltType,
-  teeth: number
-): {
-  pitchRadius: number;    // Делительный радиус (мм)
-  outerRadius: number;    // Внешний радиус (мм)
-  pitchDiameter: number;  // Делительный диаметр (мм)
-  outerDiameter: number; // Внешний диаметр (мм)
-} => {
-  const { pitch, toothHeight } = beltProfiles[beltType];
+export const calculatePulleyRadius = (beltType: BeltType, teeth: number) => {
+  const profile = beltProfiles[beltType];
   
-  // Основные расчёты по стандарту ISO
-  const pitchRadius = (pitch * teeth) / (2 * Math.PI);
-  const outerRadius = pitchRadius + toothHeight;
-
+  // Точный расчет делительного диаметра (Pitch Diameter)
+  const pitchDiameter = (profile.pitch * teeth) / Math.PI;
+  const pitchRadius = pitchDiameter / 2;
+  
+  // Внешний диаметр с учетом высоты зуба
+  const outerRadius = pitchRadius + profile.toothHeight;
+  
   return {
     pitchRadius: parseFloat(pitchRadius.toFixed(3)),
     outerRadius: parseFloat(outerRadius.toFixed(3)),
-    pitchDiameter: parseFloat((pitchRadius * 2).toFixed(3)),
+    pitchDiameter: parseFloat(pitchDiameter.toFixed(3)),
     outerDiameter: parseFloat((outerRadius * 2).toFixed(3)),
   };
 };
