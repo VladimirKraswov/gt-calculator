@@ -1,77 +1,76 @@
-import type { BeltType } from "../types";
+// calculations.ts
 
-export type ToothProfile = {
-  pitch: number;          // Шаг зуба (мм)
-  toothHeight: number;   // Высота зуба (мм)
-  topWidth: number;      // Ширина вершины зуба (мм)
-  baseWidth: number;     // Ширина основания зуба (мм)
-  angle?: number;        // Угол наклона (град)
+import type { BeltType, PulleySpecs } from "../types";
+import { beltProfiles, t5StandardSpecs } from "./constants";
+
+export const getScrewType = (boreDiameter: number): string => {
+  if (boreDiameter <= 5) return "M3";
+  if (boreDiameter <= 12) return "M4";
+  if (boreDiameter <= 17) return "M5";
+  if (boreDiameter <= 30) return "M6";
+  return "M8";
 };
 
-export const beltProfiles: Record<BeltType, ToothProfile> = {
-  GT2: {
-    pitch: 2,
-    toothHeight: 1.38,
-    topWidth: 0.8,
-    baseWidth: 1.0,
-    angle: 40,
-  },
-  GT3: {
-    pitch: 3,
-    toothHeight: 1.5,
-    topWidth: 1.3,
-    baseWidth: 1.8,
-    angle: 40,
-  },
-  T5: {
-    pitch: 5,
-    toothHeight: 2.2,
-    topWidth: 2.0,
-    baseWidth: 3.0,
-    angle: 40,
-  },
-  T10: {
-    pitch: 10,
-    toothHeight: 4.5,
-    topWidth: 4.0,
-    baseWidth: 6.0,
-    angle: 40,
-  },
-  HTD3M: {
-    pitch: 3,
-    toothHeight: 1.73,
-    topWidth: 1.3,
-    baseWidth: 2.0,
-    angle: 40,
-  },
-  HTD5M: {
-    pitch: 5,
-    toothHeight: 2.85,
-    topWidth: 2.0,
-    baseWidth: 3.0,
-    angle: 40,
-  },
+type CalculatedPulley = {
+  teeth: number;
+  pitchDiameter: number;
+  outerDiameter: number;
+  isStandard: boolean;
+  flangeDiameter?: number;
+  boreDiameter?: number;
+  hubDiameter?: number;
+  screwType?: string;
+  standardSpecs?: PulleySpecs;
 };
 
 /**
  * Рассчитывает точные параметры шкива по стандарту ISO
  */
-export const calculatePulleyRadius = (beltType: BeltType, teeth: number) => {
+export const calculatePulley = (
+  beltType: BeltType,
+  teeth: number,
+  options?: { 
+    forPrinting?: boolean;
+    includeStandard?: boolean;
+  }
+): CalculatedPulley => {
   const profile = beltProfiles[beltType];
   
-  // Точный расчет делительного диаметра (Pitch Diameter)
-  const pitchDiameter = (profile.pitch * teeth) / Math.PI;
-  const pitchRadius = pitchDiameter / 2;
-  
-  // Внешний диаметр с учетом высоты зуба
-  const outerRadius = pitchRadius + profile.toothHeight;
-  
-  return {
-    pitchRadius: parseFloat(pitchRadius.toFixed(3)),
-    outerRadius: parseFloat(outerRadius.toFixed(3)),
-    pitchDiameter: parseFloat(pitchDiameter.toFixed(3)),
-    outerDiameter: parseFloat((outerRadius * 2).toFixed(3)),
+  // Проверка допустимого количества зубьев
+  if (profile.minTeeth && teeth < profile.minTeeth) {
+    throw new Error(`Минимальное количество зубьев для ${beltType}: ${profile.minTeeth}`);
+  }
+  if (profile.maxTeeth && teeth > profile.maxTeeth) {
+    throw new Error(`Максимальное количество зубьев для ${beltType}: ${profile.maxTeeth}`);
+  }
+
+  // Попытка найти стандартные значения
+  const standardKey = `${beltType}x${teeth}`;
+  const standardSpecs = t5StandardSpecs[standardKey];
+
+  // Расчёт по стандартной формуле (если нет готовых данных)
+  const calculatedPitchDiameter = (profile.pitch * teeth) / Math.PI;
+  const calculatedOuterDiameter = calculatedPitchDiameter - (2 * profile.radialCompensation);
+
+  // Формируем результат
+  const result: CalculatedPulley = {
+    teeth,
+    pitchDiameter: standardSpecs?.pitchDiameter || parseFloat(calculatedPitchDiameter.toFixed(2)),
+    outerDiameter: standardSpecs?.outerDiameter || parseFloat(calculatedOuterDiameter.toFixed(2)),
+    isStandard: !!standardSpecs,
+    ...(standardSpecs ? {
+      flangeDiameter: standardSpecs.flangeDiameter,
+      boreDiameter: standardSpecs.boreDiameter,
+      hubDiameter: standardSpecs.hubDiameter,
+      screwType: standardSpecs.boreDiameter ? getScrewType(standardSpecs.boreDiameter) : undefined
+    } : {})
   };
+
+  if (options?.includeStandard && standardSpecs) {
+    result.standardSpecs = standardSpecs;
+  }
+
+  return result;
 };
 
 /**
@@ -82,19 +81,40 @@ export const getToothRecommendation = (
   teeth: number
 ): string => {
   const profile = beltProfiles[beltType];
+  const { pitchDiameter, outerDiameter } = calculatePulley(beltType, teeth, { forPrinting: true });
   
   let tips = [
-    `Для ${beltType}: высота зуба = ${profile.toothHeight} мм`,
-    `Ширина вершины = ${profile.topWidth} мм`,
-    `Ширина основания = ${profile.baseWidth} мм`,
+    `=== Параметры для ${beltType}-${teeth} ===`,
+    `Стандартные:`,
+    `- Высота зуба = ${profile.toothHeight} мм`,
+    `- Ширина вершины = ${profile.topWidth} мм`,
+    `- Ширина основания = ${profile.baseWidth} мм`,
+    `\nРасчётные значения:`,
+    `- Делительный диаметр = ${pitchDiameter.toFixed(2)} мм`,
+    `- Внешний диаметр (печать) = ${outerDiameter.toFixed(2)} mm`,
   ];
 
   if (teeth < 16) {
-    tips.push("Рекомендация: уменьшить толщину зуба на 20%");
-    tips.push("Использовать сопло 0.3 мм или меньше");
+    tips.push(
+      "\nРекомендации:",
+      "- Уменьшить толщину зуба на 15-20%",
+      "- Использовать сопло ≤ 0.3 мм",
+      "- Печатать с 100% заполнением"
+    );
+  } else if (teeth < 30) {
+    tips.push(
+      "\nРекомендации:",
+      "- Стандартная толщина зуба",
+      "- Сопло 0.4 мм",
+      "- 3-4 периметра"
+    );
   } else {
-    tips.push("Рекомендация: стандартная толщина зуба");
-    tips.push("Можно использовать сопло 0.4 мм");
+    tips.push(
+      "\nРекомендации:",
+      "- Проверить усадку материала",
+      "- Сопло 0.4-0.6 мм",
+      "- 4-6 периметров"
+    );
   }
 
   return tips.join("\n");
