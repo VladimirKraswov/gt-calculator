@@ -16,8 +16,6 @@ const MAX_VISIBLE_RADIUS = 120;
 const TOOTH_COLOR = "red";
 
 // Фиксированные размеры для чертежа зуба (в пикселях)
-const TOOTH_DRAWING_WIDTH = 200; // Ширина чертежа зуба
-const TOOTH_DRAWING_HEIGHT = 150; // Высота чертежа зуба
 const TOOTH_BASE_Y = 200; // Позиция основания зуба по Y
 
 const PulleyCalculator: React.FC = () => {
@@ -38,7 +36,6 @@ const PulleyCalculator: React.FC = () => {
   const renderPulleySchematic = () => {
     if (!results) return null;
     
-    const profile = beltProfiles[beltType];
     const centerX = PULLEY_SVG_WIDTH / 2;
     const centerY = PULLEY_SVG_HEIGHT / 2;
     
@@ -46,7 +43,6 @@ const PulleyCalculator: React.FC = () => {
     const scaleFactor = MAX_VISIBLE_RADIUS / results.outerRadius;
     const pitchR = results.pitchRadius * scaleFactor;
     const outerR = results.outerRadius * scaleFactor;
-    const toothH = profile.toothHeight * scaleFactor;
 
     // Ограничиваем количество зубьев для отрисовки
     const teethCount = Math.min(teeth, 72);
