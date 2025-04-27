@@ -1,6 +1,6 @@
 import React from "react";
-import { Row, Col, Select, InputNumber, Typography } from "antd";
-import { beltProfiles, t5StandardSpecs } from "../utils/constants"; // подключаем стандартные размеры
+import { Row, Col, Select, InputNumber, Typography, Radio, Card, Space } from "antd";
+import { beltProfiles, standardPulleySpecs } from "../utils/constants";
 import type { BeltType } from "../types";
 
 const { Text } = Typography;
@@ -14,52 +14,100 @@ interface Props {
 }
 
 const PulleyForm: React.FC<Props> = ({ beltType, setBeltType, teeth, setTeeth }) => {
-  // Стандарты для выбранного типа ремня
-  const availableStandards = Object.values(t5StandardSpecs)
-    .filter(spec => spec && spec.teeth && beltType === "T5") // Пока что только для T5 поддержка стандартов
-    .map(spec => spec.teeth)
+  const [useStandard, setUseStandard] = React.useState(true);
+
+  const availableStandards = Object.entries(standardPulleySpecs)
+    .filter(([key]) => key.startsWith(beltType))
+    .map(([_, spec]) => spec.teeth)
+    .filter((teeth, index, self) => self.indexOf(teeth) === index)
     .sort((a, b) => a - b);
 
-  return (
-    <Row gutter={16}>
-      <Col span={12}>
-        <Text strong>Тип ремня</Text>
-        <Select
-          value={beltType}
-          onChange={(v) => setBeltType(v)}
-          style={{ width: "100%" }}
-        >
-          {Object.entries(beltProfiles).map(([type, prof]) => (
-            <Option key={type} value={type}>
-              {`${type} (шаг ${prof.pitch} мм)`}
-            </Option>
-          ))}
-        </Select>
-      </Col>
+  const hasStandards = availableStandards.length > 0;
 
-      <Col span={12}>
-        <Text strong>Число зубьев</Text>
-        {availableStandards.length > 0 ? (
-          <Select
-            value={teeth}
-            onChange={(v) => setTeeth(v)}
-            style={{ width: "100%" }}
-            options={availableStandards.map(teethCount => ({
-              label: `${teethCount} зубьев`,
-              value: teethCount
-            }))}
-          />
-        ) : (
-          <InputNumber
-            min={8}
-            max={200}
-            value={teeth}
-            onChange={(v) => setTeeth(v || 20)}
-            style={{ width: "100%" }}
-          />
-        )}
-      </Col>
-    </Row>
+  React.useEffect(() => {
+    setUseStandard(hasStandards);
+  }, [beltType, hasStandards]);
+
+  return (
+    <Card 
+      title="Параметры шкива" 
+      bordered={false}
+      headStyle={{ border: 'none', paddingBottom: 0 }}
+      bodyStyle={{ paddingTop: 12 }}
+    >
+      <Row gutter={[24, 16]}>
+        <Col span={24} md={12}>
+          <Space direction="vertical" style={{ width: '100%' }}>
+            <Text strong style={{ display: 'block', marginBottom: 4 }}>Тип ремня</Text>
+            <Select
+              value={beltType}
+              onChange={setBeltType}
+              style={{ width: "100%" }}
+              size="large"
+              dropdownStyle={{ borderRadius: 8 }}
+            >
+              {Object.entries(beltProfiles).map(([type, prof]) => (
+                <Option key={type} value={type}>
+                  <Text strong>{type}</Text>
+                  <Text type="secondary" style={{ marginLeft: 8 }}>шаг {prof.pitch} мм</Text>
+                </Option>
+              ))}
+            </Select>
+          </Space>
+        </Col>
+
+        <Col span={24} md={12}>
+          <Space direction="vertical" style={{ width: '100%' }}>
+            <Text strong style={{ display: 'block', marginBottom: 4 }}>Число зубьев</Text>
+            
+            {hasStandards && (
+              <Radio.Group
+                value={useStandard ? "standard" : "manual"}
+                onChange={(e) => setUseStandard(e.target.value === "standard")}
+                optionType="button"
+                buttonStyle="solid"
+                size="middle"
+                style={{ width: '100%', display: 'flex' }}
+              >
+                <Radio.Button value="standard" style={{ flex: 1, textAlign: 'center' }}>Стандартные</Radio.Button>
+                <Radio.Button value="manual" style={{ flex: 1, textAlign: 'center' }}>Вручную</Radio.Button>
+              </Radio.Group>
+            )}
+
+            <div style={{ marginTop: hasStandards ? 8 : 0 }}>
+              {useStandard && hasStandards ? (
+                <Select
+                  value={teeth}
+                  onChange={setTeeth}
+                  style={{ width: "100%" }}
+                  size="large"
+                  dropdownStyle={{ borderRadius: 8 }}
+                  options={availableStandards.map(teethCount => ({
+                    label: (
+                      <span>
+                        <Text strong>{teethCount}</Text>
+                        <Text type="secondary"> зубьев</Text>
+                      </span>
+                    ),
+                    value: teethCount,
+                  }))}
+                />
+              ) : (
+                <InputNumber
+                  min={8}
+                  max={200}
+                  value={teeth}
+                  onChange={(v) => setTeeth(v || 20)}
+                  style={{ width: "100%" }}
+                  size="large"
+                  addonAfter="зубьев"
+                />
+              )}
+            </div>
+          </Space>
+        </Col>
+      </Row>
+    </Card>
   );
 };
 
