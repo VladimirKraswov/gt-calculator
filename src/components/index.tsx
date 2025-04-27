@@ -1,5 +1,5 @@
-import React from "react";
-import { Card, Button, Divider, Row, Col } from "antd";
+import React, { useEffect } from "react";
+import { Card, Divider, Row, Col, Spin } from "antd";
 import { useTheme } from "antd-style";
 import PulleyForm from "./PulleyForm";
 import PulleySchematic from "./PulleySchematic";
@@ -13,30 +13,57 @@ const PulleyCalculator: React.FC = () => {
   const [beltType, setBeltType] = React.useState<BeltType>("GT2");
   const [teeth, setTeeth] = React.useState<number>(20);
   const [results, setResults] = React.useState<any>(null);
+  const [loading, setLoading] = React.useState<boolean>(false);
 
-  const handleCalculate = () => {
-    const calc = calculatePulley(beltType, teeth);
-    const rec = getToothRecommendation(beltType, teeth);
-    setResults({ ...calc, recommendation: rec });
+  // Функция расчета
+  const calculateResults = () => {
+    setLoading(true);
+    try {
+      const calc = calculatePulley(beltType, teeth);
+      const rec = getToothRecommendation(beltType, teeth);
+      setResults({ ...calc, recommendation: rec });
+    } catch (error) {
+      console.error("Calculation error:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  return (
-    <Card title="Расчёт зубчатых шкивов" style={{ maxWidth: 1000, margin: "0 auto", background: token.colorBgContainer }}>
-      <PulleyForm beltType={beltType} setBeltType={setBeltType} teeth={teeth} setTeeth={setTeeth} />
-      <Divider />
-      <Button type="primary" block onClick={handleCalculate}>Рассчитать</Button>
+  // Автоматический перерасчет при изменении параметров
+  useEffect(() => {
+    calculateResults();
+  }, [beltType, teeth]);
 
-      {results && (
-        <>
-          <Divider />
-          <Row gutter={16} justify="space-around">
-            <Col><PulleySchematic beltType={beltType} teeth={teeth} results={results} /></Col>
-            <Col><ToothProfile beltType={beltType} /></Col>
-          </Row>
-          <Divider />
-          <Results beltType={beltType} results={results} />
-        </>
-      )}
+  return (
+    <Card 
+      title="Расчёт зубчатых шкивов" 
+      style={{ maxWidth: 1000, margin: "0 auto", background: token.colorBgContainer }}
+    >
+      <PulleyForm 
+        beltType={beltType} 
+        setBeltType={setBeltType} 
+        teeth={teeth} 
+        setTeeth={setTeeth} 
+      />
+      
+      <Divider />
+      
+      <Spin spinning={loading}>
+        {results && (
+          <>
+            <Row gutter={16} justify="space-around">
+              <Col>
+                <PulleySchematic beltType={beltType} teeth={teeth} results={results} />
+              </Col>
+              <Col>
+                <ToothProfile beltType={beltType} />
+              </Col>
+            </Row>
+            <Divider />
+            <Results beltType={beltType} results={results} />
+          </>
+        )}
+      </Spin>
     </Card>
   );
 };
