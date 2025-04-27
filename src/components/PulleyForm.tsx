@@ -60,21 +60,7 @@ const PulleyForm: React.FC<Props> = ({ beltType, setBeltType, teeth, setTeeth })
           <Space direction="vertical" style={{ width: '100%' }}>
             <Text strong style={{ display: 'block', marginBottom: 4 }}>Число зубьев</Text>
             
-            {hasStandards && (
-              <Radio.Group
-                value={useStandard ? "standard" : "manual"}
-                onChange={(e) => setUseStandard(e.target.value === "standard")}
-                optionType="button"
-                buttonStyle="solid"
-                size="middle"
-                style={{ width: '100%', display: 'flex' }}
-              >
-                <Radio.Button value="standard" style={{ flex: 1, textAlign: 'center' }}>Стандартные</Radio.Button>
-                <Radio.Button value="manual" style={{ flex: 1, textAlign: 'center' }}>Вручную</Radio.Button>
-              </Radio.Group>
-            )}
-
-            <div style={{ marginTop: hasStandards ? 8 : 0 }}>
+            <div style={{ marginBottom: hasStandards ? 8 : 0 }}>
               {useStandard && hasStandards ? (
                 <Select
                   value={teeth}
@@ -104,6 +90,20 @@ const PulleyForm: React.FC<Props> = ({ beltType, setBeltType, teeth, setTeeth })
                 />
               )}
             </div>
+
+            {hasStandards && (
+              <Radio.Group
+                value={useStandard ? "standard" : "manual"}
+                onChange={(e) => setUseStandard(e.target.value === "standard")}
+                optionType="button"
+                buttonStyle="solid"
+                size="middle"
+                style={{ width: '100%', display: 'flex' }}
+              >
+                <Radio.Button value="standard" style={{ flex: 1, textAlign: 'center' }}>Стандартные</Radio.Button>
+                <Radio.Button value="manual" style={{ flex: 1, textAlign: 'center' }}>Вручную</Radio.Button>
+              </Radio.Group>
+            )}
           </Space>
         </Col>
       </Row>
