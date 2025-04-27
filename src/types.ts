@@ -1,35 +1,33 @@
-// types.ts
-export type BeltProfile = {
-    pitch: number;       // Шаг зуба (мм)
-    toothHeight: number; // Высота зуба (мм)
-    widthOptions: number[]; // Доступные ширины ремня (мм)
-  };
-  
-  export type BeltType = 'GT2' | 'GT3' | 'T5' | 'T10' | 'HTD3M' | 'HTD5M'; // и другие ваши типы
-  
-  export interface PulleyResult {
-    radius: number;      // Радиус шкива (мм)
-    diameter: number;    // Диаметр шкива (мм)
-    recommendation: string; // Рекомендации по моделированию
-  }
+// Типы ремней
+export type BeltType = 'GT2' | 'GT3' | 'T5' | 'T10' | 'HTD3M' | 'HTD5M';
 
-  export type ToothProfile = {
-    pitch: number;          // Шаг зуба (мм)
-    toothHeight: number;   // Высота зуба (мм)
-    topWidth: number;      // Ширина вершины зуба (мм)
-    baseWidth: number;     // Ширина основания зуба (мм)
-    radialCompensation: number; // Радиальная компенсация для печати (мм)
-    angle?: number;        // Угол наклона (град)
-    minTeeth?: number;     // Минимальное кол-во зубьев
-    maxTeeth?: number;     // Максимальное кол-во зубьев
-  };
+// Профиль зуба ремня
+export type ToothProfile = {
+  pitch: number;          // Шаг зуба (мм)
+  toothHeight: number;    // Высота зуба (мм)
+  topWidth: number;       // Ширина вершины зуба (мм)
+  baseWidth: number;      // Ширина основания зуба (мм)
+  radialCompensation: number; // Радиальная компенсация для печати (мм)
+  toothDepth: number;     // Реальная глубина канавки зуба (мм) !!! новое поле
+  angle?: number;         // Угол наклона зуба (градусы)
+  minTeeth?: number;      // Минимальное допустимое количество зубьев
+  maxTeeth?: number;      // Максимальное допустимое количество зубьев
+};
 
-  export type PulleySpecs = {
-    teeth: number;
-    pitchDiameter: number;
-    outerDiameter: number;
-    flangeDiameter?: number;    // Диаметр фланца (F)
-    boreDiameter?: number;      // Посадочный диаметр (M)
-    hubDiameter?: number;       // Диаметр ступицы (Dm)
-    screwType?: string;         // Тип крепёжного винта
-  };
+// Спецификации стандартного шкива
+export type PulleySpecs = {
+  teeth: number;              // Количество зубьев
+  pitchDiameter: number;      // Делительный диаметр (мм)
+  outerDiameter: number;      // Внешний диаметр (мм)
+  flangeDiameter?: number;    // Диаметр фланца (F) (мм)
+  boreDiameter?: number;      // Посадочный диаметр (M) (мм)
+  hubDiameter?: number;       // Диаметр ступицы (Dm) (мм)
+  screwType?: string;         // Тип резьбы под винт (например, M4)
+};
+
+// Результаты расчёта шкива
+export interface PulleyResult {
+  radius: number;             // Радиус шкива (мм)
+  diameter: number;           // Диаметр шкива (мм)
+  recommendation: string;     // Текстовые рекомендации по проектированию
+}

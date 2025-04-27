@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { ConfigProvider, theme, App as AntdApp, Switch, Typography } from "antd";
 import ruRU from "antd/locale/ru_RU";
-import PulleyCalculator from "./components/PulleyCalculator";
+import PulleyCalculator from "./components";
 import "./App.css";
 import { version } from '../package.json';
 
