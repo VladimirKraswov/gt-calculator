@@ -51,10 +51,10 @@ export const calculatePulley = (
 
   const result: CalculatedPulley = {
     teeth,
-    pitchDiameter: standardSpecs?.pitchDiameter || parseFloat(calculatedPitchDiameter.toFixed(3)),
-    outerDiameter: standardSpecs?.outerDiameter || parseFloat(calculatedOuterDiameter.toFixed(3)),
-    rootDiameter: parseFloat(calculatedRootDiameter.toFixed(3)), // всегда вручную
-    isStandard: !!standardSpecs,
+    pitchDiameter: parseFloat(calculatedPitchDiameter.toFixed(3)), // Используем расчётный
+    outerDiameter: parseFloat(calculatedOuterDiameter.toFixed(3)), // Используем расчётный
+    rootDiameter: parseFloat(calculatedRootDiameter.toFixed(3)),
+    isStandard: false, // Игнорируем стандарт
     ...(standardSpecs ? {
       flangeDiameter: standardSpecs.flangeDiameter,
       boreDiameter: standardSpecs.boreDiameter,
