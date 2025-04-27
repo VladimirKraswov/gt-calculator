@@ -53,7 +53,11 @@ const PulleyCalculator: React.FC = () => {
           <>
             <Row gutter={16} justify="space-around">
               <Col>
-                <PulleySchematic beltType={beltType} teeth={teeth} results={results} />
+                <PulleySchematic 
+                  beltType={beltType} 
+                  teeth={teeth} 
+                  results={results} 
+                />
               </Col>
               <Col>
                 <ToothProfile beltType={beltType} />
